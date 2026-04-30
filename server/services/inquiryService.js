@@ -1,19 +1,13 @@
-import nodemailer from "nodemailer";
 import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
+import { Resend } from "resend";
 
-// create transporter once
-const inquiryTransporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: env.EMAIL_USER,
-    pass: env.EMAIL_PASS,
-  },
-});
+// initialize resend
+const resend = new Resend(env.RESEND_API_KEY);
 
 export async function createInquiry({ name, email, message }) {
-  // 1. Save to DB (fast)
+  // 1. Save to DB
   const inquiry = await prisma.inquiry.create({
     data: {
       name: String(name).trim(),
@@ -22,10 +16,10 @@ export async function createInquiry({ name, email, message }) {
     },
   });
 
-  // 2. Send email in background (NON-BLOCKING 🔥)
-  inquiryTransporter
-    .sendMail({
-      from: env.EMAIL_USER,
+  // 2. Send email (non-blocking, no SMTP issues)
+  resend.emails
+    .send({
+      from: "onboarding@resend.dev", // default allowed sender
       to: "MittalSpinners@gmail.com",
       subject: "New Inquiry from Mittal Spinners Website",
       text: `Name: ${String(name).trim()}
@@ -33,15 +27,12 @@ Email: ${String(email).trim()}
 Message: ${String(message).trim()}`,
     })
     .then(() => {
-      logger.email("sent", "Inquiry notification delivered");
+      logger.email("sent", "Inquiry email delivered");
     })
-    .catch((emailError) => {
-      logger.email(
-        "failed",
-        emailError instanceof Error ? emailError.message : String(emailError)
-      );
+    .catch((err) => {
+      logger.email("failed", err?.message || String(err));
     });
 
-  // 3. Return immediately (this makes UI fast)
+  // 3. Return immediately (fast UI)
   return inquiry;
 }
