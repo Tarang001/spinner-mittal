@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma.js";
 import { env } from "../config/env.js";
 import { logger } from "../utils/logger.js";
 
+// create transporter once
 const inquiryTransporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -12,6 +13,7 @@ const inquiryTransporter = nodemailer.createTransport({
 });
 
 export async function createInquiry({ name, email, message }) {
+  // 1. Save to DB (fast)
   const inquiry = await prisma.inquiry.create({
     data: {
       name: String(name).trim(),
@@ -20,17 +22,26 @@ export async function createInquiry({ name, email, message }) {
     },
   });
 
-  try {
-    await inquiryTransporter.sendMail({
+  // 2. Send email in background (NON-BLOCKING 🔥)
+  inquiryTransporter
+    .sendMail({
       from: env.EMAIL_USER,
       to: "MittalSpinners@gmail.com",
       subject: "New Inquiry from Mittal Spinners Website",
-      text: `Name: ${String(name).trim()}\nEmail: ${String(email).trim()}\nMessage: ${String(message).trim()}`,
+      text: `Name: ${String(name).trim()}
+Email: ${String(email).trim()}
+Message: ${String(message).trim()}`,
+    })
+    .then(() => {
+      logger.email("sent", "Inquiry notification delivered");
+    })
+    .catch((emailError) => {
+      logger.email(
+        "failed",
+        emailError instanceof Error ? emailError.message : String(emailError)
+      );
     });
-    logger.email("sent", "Inquiry notification delivered");
-  } catch (emailError) {
-    logger.email("failed", emailError instanceof Error ? emailError.message : String(emailError));
-  }
 
+  // 3. Return immediately (this makes UI fast)
   return inquiry;
 }
