@@ -1,13 +1,12 @@
 import axios, { AxiosInstance } from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
 export const TOKEN_KEY = "mittel_auth_token";
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
-  withCredentials: true, // ✅ ADD THIS LINE
+  withCredentials: true,
 });
 
 const withDataEnvelope = <T = unknown>(promise: Promise<{ data: any }>) =>
@@ -45,7 +44,6 @@ api.interceptors.response.use(
   }
 );
 
-// ---- Endpoint helpers (frontend integration points) ----
 export const AuthAPI = {
   register: (email: string, password: string, name?: string) =>
     withDataEnvelope(api.post("/api/auth/register", { email, password, ...(name ? { name } : {}) })),
@@ -71,10 +69,7 @@ export const AttendanceAPI = {
   list: (params?: { date?: string; from?: string; to?: string }) =>
     withDataEnvelope(api.get("/api/attendance", { params: params ?? {} })),
   export: (params: { fromDate: string; toDate: string }) =>
-    api.get("/api/attendance/export", {
-      params,
-      responseType: "blob",
-    }),
+    api.get("/api/attendance/export", { params, responseType: "blob" }),
 };
 
 export const InventoryAPI = {
