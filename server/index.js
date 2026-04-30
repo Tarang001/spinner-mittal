@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: isDev ? true : ["https://mittalproject-1.onrender.com"],
+    origin: isDev ? true : ["https://spinner-mittal-1.onrender.com"],
     credentials: true,
   })
 );
@@ -88,3 +88,5 @@ bootstrap().catch((error) => {
   console.error("Failed to start server", error);
   process.exit(1);
 });
+
+
