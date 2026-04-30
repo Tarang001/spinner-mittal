@@ -20,7 +20,7 @@ export async function createInquiry({ name, email, message }) {
   resend.emails
     .send({
       from: "onboarding@resend.dev", // default allowed sender
-      to: "mrinalini070705@gmail.com",
+      to: "mittalspinners@gmail.com",
       subject: "New Inquiry from Mittal Spinners Website",
       text: `Name: ${String(name).trim()}
 Email: ${String(email).trim()}
