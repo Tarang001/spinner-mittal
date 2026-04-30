@@ -48,7 +48,7 @@ const Home = () => {
   }, []);
 
   const scrollToContact = () => {
-    window.location.assign("/contact");
+    window.location.href = "/contact";
   };
 
   return (
