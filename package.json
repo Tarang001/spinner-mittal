@@ -1,0 +1,16 @@
+{
+  "name": "mittal-spinner-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "build": "pnpm --filter client build && pnpm --filter server prisma:generate",
+    "start": "pnpm --filter server start",
+    "prisma:generate": "pnpm --filter server prisma:generate",
+    "prisma:migrate:deploy": "pnpm --filter server prisma:migrate:deploy"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "packageManager": "pnpm@10.18.2"
+}
